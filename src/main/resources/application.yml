@@ -1,0 +1,45 @@
+server:
+   port: 8082
+   
+spring:
+  #数据库连接配置
+  datasource:
+     db1:
+       driver-class-name: com.mysql.cj.jdbc.Driver
+       jdbc-url: jdbc:mysql://127.0.0.1:3306/order_manager?characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
+       username: root
+       password: root
+     db2:
+       driver-class-name: com.mysql.cj.jdbc.Driver
+       jdbc-url: jdbc:mysql://127.0.0.1:3306/user_manager?characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
+       username: root
+       password: root
+     
+    
+    
+  redis:
+     order:
+      host: 127.0.0.1
+      port: 6379
+      password: 123456
+     user:
+      host: 127.0.0.1
+      port: 6379
+      password: 123456
+ 
+    
+#mybatis的相关配置
+mybatis:
+  #mapper配置文件
+  mapper-locations: classpath:mapper/*.xml
+  #开启驼峰命名
+  configuration:
+    map-underscore-to-camel-case: true
+
+pagehelper:
+    helperDialect: mysql
+    reasonable: true
+    supportMethodsArguments: true
+    params: count=countSql
+
+ 

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.chenm.user_manager.user.mapper.db2.UserMapper">
+  
+    
+    <insert id="addUser" parameterType="com.chenm.user_manager.user.model.entity.User">
+	  insert into user(user_id,user_name,password,id_card,state,create_time,login_name) 
+	  values(#{userId}, #{userName}, #{password}, #{idCard}, #{state}, #{createTime}, #{loginName})
+	</insert>
+	
+	<select id="getUserByLoginName" resultType="com.chenm.user_manager.user.model.entity.User">
+	  select user_id,user_name,password,id_card,state,create_time,login_name from user where state=1 and login_name=#{loginName}
+	</select>
+	
+	<insert id="updateUser" parameterType="com.chenm.user_manager.user.model.entity.User">
+	  update user
+        <set>
+            <if test="password != null">password=#{password},</if>
+            <if test="idCard != null">id_card=#{idCard},</if>
+            <if test="updateId != null">update_id=#{updateId},</if>
+            <if test="state != null">state=#{state}</if>
+        </set>
+        where user_id=#{userId}
+	</insert>
+	
+	<select id="listUser" resultType="com.chenm.user_manager.user.model.entity.User">
+	  select user_id,user_name,password,id_card,state,create_time,login_name from user where state=1 
+	  <where>
+	  	<if test="userName!=null">
+	  		and user_name=#{userName}
+	  	</if>
+	  </where>
+	</select>
+	
+	<select id="getUserById" resultType="com.chenm.user_manager.user.model.entity.User">
+	  select user_id,user_name,password,id_card,state,create_time,login_name from user where state=1 and user_id=#{userId}
+	</select>
+</mapper>
