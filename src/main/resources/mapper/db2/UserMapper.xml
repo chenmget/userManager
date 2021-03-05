@@ -23,13 +23,11 @@
         where user_id=#{userId}
 	</insert>
 	
-	<select id="listUser" resultType="com.chenm.user_manager.user.model.entity.User">
+	<select id="listUser" resultType="com.chenm.user_manager.user.model.dto.UserDTO">
 	  select user_id,user_name,password,id_card,state,create_time,login_name from user where state=1 
-	  <where>
 	  	<if test="userName!=null">
-	  		and user_name=#{userName}
+	  		and user_name like  CONCAT('%',#{userName},'%')
 	  	</if>
-	  </where>
 	</select>
 	
 	<select id="getUserById" resultType="com.chenm.user_manager.user.model.entity.User">

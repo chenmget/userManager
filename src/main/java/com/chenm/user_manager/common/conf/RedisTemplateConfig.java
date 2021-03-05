@@ -45,6 +45,25 @@ public class RedisTemplateConfig {
     private static final int MAX_TOTAL = 1024; //最大连接数
     private static final long MAX_WAIT_MILLIS = 10000; //建立连接最长等待时间
     
+    
+  //------------------------------------
+    @Bean(name = "redisOrderTemplate")
+    public StringRedisTemplate redisOrderTemplate() {
+        StringRedisTemplate template = new StringRedisTemplate();
+        template.setConnectionFactory(
+                connectionFactory(orderHost, Integer.parseInt(orderPort), orderPassword, MAX_IDLE, MAX_TOTAL, MAX_WAIT_MILLIS, 0));
+        return template;
+    }
+ 
+    //------------------------------------
+    @Bean(name = "redisUserTemplate")
+    public StringRedisTemplate userUserTemplate() {
+        StringRedisTemplate template = new StringRedisTemplate();
+        template.setConnectionFactory(
+                connectionFactory(userHost, Integer.parseInt(userPort), userPassword, MAX_IDLE, MAX_TOTAL, MAX_WAIT_MILLIS, 0)); 
+        return template;
+    }
+    
   //配置工厂
     @SuppressWarnings("deprecation")
 	public RedisConnectionFactory connectionFactory(String host, int port, String password, int maxIdle,
@@ -77,23 +96,7 @@ public class RedisTemplateConfig {
     }
  
  
-    //------------------------------------
-    @Bean(name = "redisOrderTemplate")
-    public StringRedisTemplate redisOrderTemplate() {
-        StringRedisTemplate template = new StringRedisTemplate();
-        template.setConnectionFactory(
-                connectionFactory(orderHost, Integer.parseInt(orderPort), orderPassword, MAX_IDLE, MAX_TOTAL, MAX_WAIT_MILLIS, 0));
-        return template;
-    }
- 
-    //------------------------------------
-    @Bean(name = "redisUserTemplate")
-    public StringRedisTemplate userUserTemplate() {
-        StringRedisTemplate template = new StringRedisTemplate();
-        template.setConnectionFactory(
-                connectionFactory(userHost, Integer.parseInt(userPort), userPassword, MAX_IDLE, MAX_TOTAL, MAX_WAIT_MILLIS, 0)); 
-        return template;
-    }
+    
 
     
    

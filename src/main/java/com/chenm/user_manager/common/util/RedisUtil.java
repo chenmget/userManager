@@ -6,6 +6,7 @@ package com.chenm.user_manager.common.util;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
@@ -75,6 +76,36 @@ public class RedisUtil {
 		Map<Object, Object> map = template.opsForHash().entries(key);
 		
 		return map;
+		
+	}
+	
+	public void delete(String key, String source) {
+		
+		StringRedisTemplate template = getRedisTemp(source);
+		if(template==null) {
+			throw new RuntimeException("未找到数据源");
+		}
+		template.delete(key);
+	}
+	
+	public void setString(String key, String value ,Long time, String source) {
+		StringRedisTemplate template = getRedisTemp(source);
+		if(template==null) {
+			throw new RuntimeException("未找到数据源");
+		}
+		template.opsForValue().set(key, value);
+		if(time!=null) {
+			template.expire(key, time, TimeUnit.SECONDS);
+		}
+		
+	}
+	
+	public String getString(String key,  String source) {
+		StringRedisTemplate template = getRedisTemp(source);
+		if(template==null) {
+			throw new RuntimeException("未找到数据源");
+		}
+		return template.opsForValue().get(key);
 		
 	}
 
