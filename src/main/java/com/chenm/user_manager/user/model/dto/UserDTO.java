@@ -7,6 +7,11 @@ public class UserDTO {
 	private String loginName;
 	private String userName;
 	private String idCard;
+	private String createTime;//创建时间
+	private String updateTime;//修改时间
+	private String password;
+	
+	
 	public String getUserId() {
 		return userId;
 	}
@@ -31,6 +36,25 @@ public class UserDTO {
 	public void setIdCard(String idCard) {
 		this.idCard = idCard;
 	}
+	public String getCreateTime() {
+		return createTime;
+	}
+	public void setCreateTime(String createTime) {
+		this.createTime = createTime;
+	}
+	public String getUpdateTime() {
+		return updateTime;
+	}
+	public void setUpdateTime(String updateTime) {
+		this.updateTime = updateTime;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	
 	
 	
 

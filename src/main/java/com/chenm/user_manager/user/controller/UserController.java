@@ -3,6 +3,7 @@ package com.chenm.user_manager.user.controller;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,10 +24,12 @@ import com.chenm.user_manager.user.service.UserService;
  *
  */
 @RestController
-@RequestMapping("user")
+@RequestMapping("api/user")
 public class UserController {
 	 @Autowired
 	 private UserService userService;
+	 
+	
 	
 	 /**
 	  * 用户注册
@@ -34,8 +37,8 @@ public class UserController {
 	  * @param req
 	  * @return
 	  */
-    @RequestMapping(value="/register",method = RequestMethod.POST)
-    public ResultModel register(@RequestBody UserAddReq userAddReq,HttpServletRequest request ){
+    @RequestMapping(value="/addUser",method = RequestMethod.POST)
+    public ResultModel addUser(@RequestBody UserAddReq userAddReq,HttpServletRequest request ){
         return userService.addUser(userAddReq);
     }
     
@@ -49,6 +52,8 @@ public class UserController {
         return userService.login(req);
     }
     
+   
+    
     /**
      * 修改用户
      * @param req
@@ -61,6 +66,18 @@ public class UserController {
         return userService.updateUser(req);
     }
     
+    /**
+     * 修改密码
+     * @param req
+     * @return
+     */
+    @RequestMapping(value="/updatePsw",method = RequestMethod.POST)
+    public ResultModel updatePsw(@RequestBody UserUpdateReq req,HttpServletRequest request){
+    	String updateId = getUserIdFromReq(request);
+    	req.setUpdateId(updateId);
+        return userService.updatePsw(req);
+    }
+    
     
 
 	/**
@@ -68,11 +85,10 @@ public class UserController {
      * @param req
      * @return
      */
-    @RequestMapping(value="/deleteUser",method = RequestMethod.POST)
-    public ResultModel deleteUser(@RequestBody UserDeleteReq req,HttpServletRequest request){
-    	String updateId = getUserIdFromReq(request);
-    	req.setUpdateId(updateId);
-        return userService.deleteUser(req);
+    @RequestMapping(value="/deleteUser/{userId}",method = RequestMethod.DELETE)
+    public ResultModel deleteUser(@PathVariable("userId") String userId){
+   
+        return userService.deleteUser(userId);
     }
     
     /**

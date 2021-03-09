@@ -16,7 +16,7 @@ import com.alibaba.fastjson.JSON;
 import com.chenm.user_manager.common.constant.CommonConstant;
 import com.chenm.user_manager.common.constant.RedisPrefixConstant;
 import com.chenm.user_manager.common.model.ResultModel;
-import com.chenm.user_manager.common.util.DesUtil;
+import com.chenm.user_manager.common.util.Base64Util;
 import com.chenm.user_manager.common.util.IdUtil;
 import com.chenm.user_manager.common.util.RedisUtil;
 import com.chenm.user_manager.user.mapper.db1.OrderMapper;
@@ -52,6 +52,16 @@ public class UserServiceImpl implements UserService{
 	private static final int MAX_LOGIN_TIME=3;//最大允许登录次数
 	
 	@Override
+	public ResultModel token(UserLoginReq req) {
+		UserLoginResp resp = new UserLoginResp();
+		resp.setUserName("chenmin");
+		resp.setUserId("1");
+		logger.info("UserServiceImpl.login req={}",JSON.toJSON(resp)); 
+		return ResultModel.ok(resp);
+	}
+	
+	
+	@Override
 	public ResultModel addUser(UserAddReq req) {
 		logger.info("UserServiceImpl.addUser req={}",JSON.toJSON(req)); 
 		//校验登录名是否存在
@@ -69,7 +79,17 @@ public class UserServiceImpl implements UserService{
 		String userId = IdUtil.getUUID();
 		user.setUserId(userId);
 		//设置默认密码
-		user.setPassword(DigestUtils.md5DigestAsHex(INIT_PASSWORD.getBytes()));
+		String encryPassword = req.getPassword(); 
+		String decryPassword=encryPassword;
+		//校验密码合法性
+		ResultModel rst = ValidityUtil.checkPasswordRule(decryPassword);
+		if(!rst.isSuccess()) {
+			return rst;
+		}
+		
+		//md5加密
+		String md5Psw= DigestUtils.md5DigestAsHex(decryPassword.getBytes());
+		user.setPassword(md5Psw);
 		user.setCreateTime(new Date());
 		user.setState(CommonConstant.VALID);
 		//数据入库
@@ -111,27 +131,22 @@ public class UserServiceImpl implements UserService{
 			return ResultModel.error("密码输入次数过多，请10分钟后再试");
 		}
 		//解密后密码
-		String decryPassword=null;
-		try {
-			decryPassword = DesUtil.decrypt(encryPassword);
-		} catch (Exception e) {
-			logger.error("用户注册解密失败，密码="+encryPassword);
-			redisUtil.setString(RedisPrefixConstant.USER_LOGIN_TIME+loginName, String.valueOf(loginTimeInt+1), 10*60L,  RedisUtil.USER_REDIS);
-			return ResultModel.error("用户密码传输有误");
-		}
+		String decryPassword=encryPassword;
+//		try {
+//			decryPassword = Base64Util.decrypt(encryPassword);
+//		} catch (Exception e) {
+//			logger.error("用户注册解密失败，密码="+encryPassword);
+//			redisUtil.setString(RedisPrefixConstant.USER_LOGIN_TIME+loginName, String.valueOf(loginTimeInt+1), 10*60L,  RedisUtil.USER_REDIS);
+//			return ResultModel.error("用户密码传输有误");
+//		}
 		//md5加密
 		String md5Psw= DigestUtils.md5DigestAsHex(decryPassword.getBytes());
 		
 		
 		//缓存中获取用户信息
-		Map<Object, Object> userMap = redisUtil.getHashObject(RedisPrefixConstant.USER+loginName, RedisUtil.USER_REDIS);
-		User user = null;
-		if(userMap==null) {
-			//查询数据库
-			user = usermapper.getUserByLoginName(loginName);
-		}else {
-			user = JSON.parseObject(JSON.toJSONString(userMap), User.class);
-		}
+		
+		User user = usermapper.getUserByLoginName(loginName);
+		
 		if(user==null) {
 			return ResultModel.error("该用户存在");
 		}
@@ -156,17 +171,51 @@ public class UserServiceImpl implements UserService{
 		if(userId==null) {
 			return ResultModel.error("用户id不能为空");
 		}
-		//更新密码
-		if(req.getPassword()!=null) {
-			String encryPassword = req.getPassword();
-			//解密后密码
-			String decryPassword=null;
-			try {
-				decryPassword = DesUtil.decrypt(encryPassword);
-			} catch (Exception e) {
-				logger.error("用户注册解密失败，密码="+encryPassword);
-				return ResultModel.error("用户密码传输有误");
+		User user = usermapper.getUserById(userId);
+		
+		if(user==null) {
+			return ResultModel.error("未找到相关用户");
+		}
+		//判断账户是否修改
+		if(req.getLoginName()!=null) {
+			User n_user = usermapper.getUserByLoginName(req.getLoginName());
+			if(n_user!=null&&!n_user.getUserId().equals(userId)) {
+				return ResultModel.error("该登录账户已被人注册，请换登录账号");
 			}
+		}
+		
+		BeanUtils.copyProperties(req, user);
+		user.setUpdateTime(new Date());
+		user.setPassword(null);
+		usermapper.updateUser(user);
+		//添加缓存
+		UserDTO dto = new UserDTO();
+		BeanUtils.copyProperties(user, dto);
+		redisUtil.setObject(RedisPrefixConstant.USER+userId, dto, RedisUtil.USER_REDIS);
+		return ResultModel.ok("修改成功");
+	}
+	
+	@Override
+	public ResultModel updatePsw(UserUpdateReq req) {
+		logger.info("UserServiceImpl.updateUser req={}",JSON.toJSON(req)); 
+		String userId = req.getUserId();
+		if(userId==null) {
+			return ResultModel.error("用户id不能为空");
+		}
+		User user = usermapper.getUserById(userId);
+		
+		if(user==null) {
+			return ResultModel.error("未找到相关用户");
+		}
+		//更新密码
+		if(req.getPassword()!=null&&req.getNewPassword()!=null) {
+			//判断原密码是否正确
+			if(!user.getPassword().equals( DigestUtils.md5DigestAsHex(req.getPassword().getBytes()))) {
+				return ResultModel.error("密码不一致");
+			}
+			String encryPassword = req.getNewPassword();
+			//解密后密码
+			String decryPassword=encryPassword;
 			//校验密码合法性
 			ResultModel rst = ValidityUtil.checkPasswordRule(decryPassword);
 			if(!rst.isSuccess()) {
@@ -175,19 +224,10 @@ public class UserServiceImpl implements UserService{
 			//md5加密
 			String md5Psw= DigestUtils.md5DigestAsHex(decryPassword.getBytes());
 			req.setPassword(md5Psw);
-		}
-		//缓存中获取用户信息
-		Map<Object, Object> userMap = redisUtil.getHashObject(RedisPrefixConstant.USER+userId, RedisUtil.USER_REDIS);
-		User user = null;
-		if(userMap==null) {
-			//查询数据库
-			user = usermapper.getUserById(userId);
 		}else {
-			user = JSON.parseObject(JSON.toJSONString(userMap), User.class);
+			return ResultModel.error("参数有误");
 		}
-		if(user==null) {
-			return ResultModel.error("未找到相关用户");
-		}
+		
 		BeanUtils.copyProperties(req, user);
 		user.setUpdateTime(new Date());
 		usermapper.updateUser(user);
@@ -199,15 +239,13 @@ public class UserServiceImpl implements UserService{
 	}
 
 	@Override
-	public ResultModel deleteUser(UserDeleteReq req) {
-		logger.info("UserServiceImpl.deleteUser req={}",JSON.toJSON(req)); 
-		String userId = req.getUserId();
+	public ResultModel deleteUser(String userId) {
+		logger.info("UserServiceImpl.deleteUser req={}",userId); 
 		if(userId==null) {
 			return ResultModel.error("用户id不能为空");
 		}
 		User user = new User();
-		user.setUserId(req.getUserId());
-		user.setUpdateId(req.getUpdateId());
+		user.setUserId(userId);
 		user.setUpdateTime(new Date());
 		user.setState(CommonConstant.INVALID);
 		usermapper.updateUser(user);
@@ -219,7 +257,7 @@ public class UserServiceImpl implements UserService{
 	@Override
 	public ResultModel listUser(UserListReq req) {
 		logger.info("UserServiceImpl.listUser req={}",JSON.toJSON(req)); 
-		PageHelper.startPage(req.getPageNum(), req.getPageSize());
+		PageHelper.startPage(req.getPage(), req.getSize());
 		List<UserDTO> list = usermapper.listUser(req);
 		PageInfo<UserDTO> page= new PageInfo<UserDTO>(list);
 		return ResultModel.ok(page);
@@ -239,6 +277,8 @@ public class UserServiceImpl implements UserService{
 		BeanUtils.copyProperties(user, resp);
 		return  ResultModel.ok(resp );
 	}
+
+	
 
 }
  

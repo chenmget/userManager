@@ -1,19 +1,19 @@
 package com.chenm.user_manager.common.model;
 
 public class PageReq {
-	private Integer pageNum=1;
-	private Integer pageSize=10;
-	public Integer getPageNum() {
-		return pageNum;
+	private Integer page=1;
+	private Integer size=10;
+	public Integer getPage() {
+		return page;
 	}
-	public void setPageNum(Integer pageNum) {
-		this.pageNum = pageNum;
+	public void setPage(Integer page) {
+		this.page = page;
 	}
-	public Integer getPageSize() {
-		return pageSize;
+	public Integer getSize() {
+		return size;
 	}
-	public void setPageSize(Integer pageSize) {
-		this.pageSize = pageSize;
+	public void setSize(Integer size) {
+		this.size = size;
 	}
 	
 	

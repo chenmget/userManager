@@ -22,11 +22,12 @@ spring:
       host: 127.0.0.1
       port: 6379
       password: 123456
+      database: 0
      user:
       host: 127.0.0.1
       port: 6379
       password: 123456
- 
+ 	  database: 1
     
 #mybatis的相关配置
 mybatis:

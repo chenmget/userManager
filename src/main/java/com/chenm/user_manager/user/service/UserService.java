@@ -39,7 +39,7 @@ public interface UserService {
 	 * @param req
 	 * @return
 	 */
-	public ResultModel deleteUser(UserDeleteReq req);
+	public ResultModel deleteUser(String req);
 	
 	/**
 	 * 用户列表
@@ -54,4 +54,13 @@ public interface UserService {
 	 * @return
 	 */
 	public ResultModel getUser(String userId);
+	
+	/**
+	 * 获取用户token
+	 * @param req
+	 * @return
+	 */
+	public ResultModel token(UserLoginReq req);
+
+	public ResultModel updatePsw(UserUpdateReq req);
 }

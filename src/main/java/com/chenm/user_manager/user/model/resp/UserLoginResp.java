@@ -2,6 +2,7 @@ package com.chenm.user_manager.user.model.resp;
 
 public class UserLoginResp {
 	private String userName;
+	private String userId;
 	private String idCard;
 	private String loginName;
 	public String getUserName() {
@@ -22,9 +23,11 @@ public class UserLoginResp {
 	public void setLoginName(String loginName) {
 		this.loginName = loginName;
 	}
-	
-
-	
-	
+	public String getUserId() {
+		return userId;
+	}
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
 	
 }

@@ -18,16 +18,20 @@
             <if test="password != null">password=#{password},</if>
             <if test="idCard != null">id_card=#{idCard},</if>
             <if test="updateId != null">update_id=#{updateId},</if>
+            <if test="updateTime != null">update_time=#{updateTime},</if>
+            <if test="loginName != null">login_name=#{loginName},</if>
+            <if test="userName != null">user_name=#{userName},</if>
             <if test="state != null">state=#{state}</if>
         </set>
         where user_id=#{userId}
 	</insert>
 	
 	<select id="listUser" resultType="com.chenm.user_manager.user.model.dto.UserDTO">
-	  select user_id,user_name,password,id_card,state,create_time,login_name from user where state=1 
+	  select user_id,password,user_name,id_card,state,DATE_FORMAT(create_time,'%Y-%m-%d %h:%m:%s')   create_time,DATE_FORMAT(update_time,'%Y-%m-%d %h:%m:%s')   update_time,login_name from user where state=1 
 	  	<if test="userName!=null">
 	  		and user_name like  CONCAT('%',#{userName},'%')
 	  	</if>
+	  	order by create_time desc
 	</select>
 	
 	<select id="getUserById" resultType="com.chenm.user_manager.user.model.entity.User">

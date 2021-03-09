@@ -30,6 +30,9 @@ public class RedisTemplateConfig {
     @Value("${spring.redis.order.password}")
     private String orderPassword;
     
+    @Value("${spring.redis.order.database}")
+    private Integer orderDataBase;
+    
     
     //user
     @Value("${spring.redis.user.host}")
@@ -40,6 +43,9 @@ public class RedisTemplateConfig {
  
     @Value("${spring.redis.user.password}")
     private String userPassword;
+    
+    @Value("${spring.redis.user.database}")
+    private Integer userDataBase;
  
     private static final int MAX_IDLE = 200; //最大空闲连接数
     private static final int MAX_TOTAL = 1024; //最大连接数
@@ -51,7 +57,7 @@ public class RedisTemplateConfig {
     public StringRedisTemplate redisOrderTemplate() {
         StringRedisTemplate template = new StringRedisTemplate();
         template.setConnectionFactory(
-                connectionFactory(orderHost, Integer.parseInt(orderPort), orderPassword, MAX_IDLE, MAX_TOTAL, MAX_WAIT_MILLIS, 0));
+                connectionFactory(orderHost, Integer.parseInt(orderPort), orderPassword, MAX_IDLE, MAX_TOTAL, MAX_WAIT_MILLIS, orderDataBase));
         return template;
     }
  
@@ -60,7 +66,7 @@ public class RedisTemplateConfig {
     public StringRedisTemplate userUserTemplate() {
         StringRedisTemplate template = new StringRedisTemplate();
         template.setConnectionFactory(
-                connectionFactory(userHost, Integer.parseInt(userPort), userPassword, MAX_IDLE, MAX_TOTAL, MAX_WAIT_MILLIS, 0)); 
+                connectionFactory(userHost, Integer.parseInt(userPort), userPassword, MAX_IDLE, MAX_TOTAL, MAX_WAIT_MILLIS,userDataBase)); 
         return template;
     }
     
